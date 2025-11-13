@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bright &amp; Breeze Electricals</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body data-page="catalog">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="#">
+          <span id="navShopIcon" role="img" aria-label="Shop">💡</span>
+          <span id="navShopName">Bright &amp; Breeze Electricals</span>
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 user-session-controls">
+            <div class="text-lg-end text-white-50 small lh-sm" id="userInfoWrapper">
+              <div id="sessionStatusLabel">Logged in as</div>
+              <div class="fw-semibold text-white" id="activeRoleLabel">Guest</div>
+            </div>
+            <div class="d-flex gap-2">
+              <button
+                class="btn btn-outline-light d-flex align-items-center gap-2"
+                type="button"
+                id="openLoginModalBtn"
+              >
+                <i class="bi bi-person-badge fs-5"></i>
+                <span>Login</span>
+              </button>
+              <button
+                class="btn btn-outline-light d-flex align-items-center gap-2 d-none"
+                type="button"
+                id="logoutBtn"
+              >
+                <i class="bi bi-box-arrow-right fs-5"></i>
+                <span>Logout</span>
+              </button>
+            </div>
+            <a class="btn btn-outline-light d-flex align-items-center gap-2 admin-only" href="reports.html">
+              <i class="bi bi-graph-up"></i>
+              <span class="d-lg-inline d-none">Reports</span>
+            </a>
+            <button
+              class="btn btn-light d-flex align-items-center gap-2 admin-only"
+              data-bs-toggle="modal"
+              data-bs-target="#settingsModal"
+              id="openSettingsBtn"
+            >
+              <i class="bi bi-gear"></i>
+              <span class="d-lg-inline d-none">Settings</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container-fluid py-4">
+      <div class="row g-3">
+        <aside class="col-12 col-lg-3">
+          <div class="card h-100 shadow-sm mb-3 mb-lg-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Categories</h5>
+              <button class="btn btn-sm btn-primary admin-only" id="addCategoryBtn" title="Add Category">
+                <i class="bi bi-plus-lg"></i>
+              </button>
+            </div>
+            <div class="list-group list-group-flush" id="categoryList"></div>
+          </div>
+          <div class="card shadow-sm company-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">Company Info</h6>
+              <button
+                class="btn btn-sm btn-outline-primary admin-only"
+                type="button"
+                data-bs-toggle="modal"
+                data-bs-target="#settingsModal"
+              >
+                <i class="bi bi-pencil-square"></i>
+              </button>
+            </div>
+            <div class="card-body small text-muted" id="companyInfoBody">
+              <p class="mb-1"><strong id="companyName">Bright &amp; Breeze Electricals</strong></p>
+              <p class="mb-1" id="companyTagline">Lighting &amp; Cooling Experts</p>
+              <p class="mb-1" id="companyAddress"></p>
+              <p class="mb-0" id="companyContact">Phone: +91-90000 00000</p>
+            </div>
+          </div>
+        </aside>
+
+        <section class="col-12 col-lg-6">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
+            <h4 class="mb-0" id="categoryTitle">Products</h4>
+            <div class="d-flex flex-wrap gap-2 admin-only">
+              <button class="btn btn-outline-secondary" id="downloadTemplateBtn" type="button">
+                <i class="bi bi-file-earmark-arrow-down"></i>
+                <span class="d-none d-lg-inline">Template</span>
+              </button>
+              <button class="btn btn-outline-primary" id="exportItemsBtn" type="button">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+                <span class="d-none d-lg-inline">Export</span>
+              </button>
+              <button class="btn btn-outline-success" id="importItemsBtn" type="button">
+                <i class="bi bi-upload"></i>
+                <span class="d-none d-lg-inline">Import</span>
+              </button>
+              <button class="btn btn-success" id="addItemBtn" title="Add Item" type="button">
+                <i class="bi bi-box-seam"></i>
+                <span class="d-none d-lg-inline">Add Item</span>
+              </button>
+            </div>
+          </div>
+          <input type="file" id="itemImportInput" accept=".xlsx,.xls" class="d-none" />
+          <div class="row row-cols-1 row-cols-md-2 g-3" id="productGrid"></div>
+        </section>
+
+        <aside class="col-12 col-lg-3">
+          <div class="card h-100 shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">Billing</h5>
+              <span class="badge bg-secondary" id="cartCount">0 items</span>
+            </div>
+            <div class="card-body d-flex flex-column">
+              <div class="cart-items flex-grow-1">
+                <div class="table-responsive">
+                  <table class="table table-sm align-middle">
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-center" id="gstHeaderCell">GST %</th>
+                        <th class="text-end">Amount</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody id="cartTableBody"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="mt-3 border-top pt-3">
+                <div class="d-flex justify-content-between">
+                  <span>Subtotal</span>
+                  <strong id="subtotalValue">₹0.00</strong>
+                </div>
+                <div class="d-flex justify-content-between mt-2" id="gstSummaryRow">
+                  <span>GST Total</span>
+                  <strong id="taxValue">₹0.00</strong>
+                </div>
+                <div class="d-flex justify-content-between fs-5 mt-2">
+                  <span>Total</span>
+                  <strong id="totalValue">₹0.00</strong>
+                </div>
+                <div class="customer-section mt-3">
+                  <h6 class="text-uppercase text-muted small mb-2">Customer Details</h6>
+                  <div class="row g-2">
+                    <div class="col-12">
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" class="form-control" id="customerNameInput" placeholder="Customer name" />
+                      </div>
+                    </div>
+                    <div class="col-12">
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                        <input type="tel" class="form-control" id="customerPhoneInput" placeholder="Phone number" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="d-grid gap-2 mt-3">
+                  <button class="btn btn-success d-flex align-items-center justify-content-center gap-2" id="payNowBtn">
+                    <i class="bi bi-qr-code-scan"></i>
+                    <span>Pay Now</span>
+                  </button>
+                  <button class="btn btn-outline-primary d-flex align-items-center justify-content-center gap-2" id="printBillBtn">
+                    <i class="bi bi-printer"></i>
+                    <span>Print Bill</span>
+                  </button>
+                  <button class="btn btn-outline-danger d-flex align-items-center justify-content-center gap-2" id="clearCartBtn">
+                    <i class="bi bi-trash"></i>
+                    <span>Clear Cart</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <!-- Category Modal -->
+    <div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form class="modal-content" id="categoryForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="categoryModalLabel">Add Category</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="categoryId" />
+            <div class="mb-3">
+              <label for="categoryName" class="form-label">Category Name</label>
+              <input type="text" class="form-control" id="categoryName" required />
+            </div>
+            <div class="mb-3">
+              <label for="categoryDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="categoryDescription" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Item Modal -->
+    <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form class="modal-content" id="itemForm">
+          <div class="modal-header">
+            <h5 class="modal-title" id="itemModalLabel">Add Item</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="itemId" />
+            <div class="mb-3">
+              <label for="itemName" class="form-label">Item Name</label>
+              <input type="text" class="form-control" id="itemName" required />
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="itemBrand" class="form-label">Brand</label>
+                <input type="text" class="form-control" id="itemBrand" placeholder="Brand name" />
+              </div>
+              <div class="col-md-6">
+                <label for="itemPrice" class="form-label">Price (₹)</label>
+                <input type="number" class="form-control" id="itemPrice" min="0" step="0.01" required />
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="itemImage" class="form-label">Image URL</label>
+                <input type="url" class="form-control" id="itemImage" placeholder="https://" />
+                <div class="form-text">Paste a direct image link or upload below.</div>
+              </div>
+              <div class="col-md-6">
+                <label for="itemImageFile" class="form-label">Upload Image</label>
+                <input type="file" class="form-control" id="itemImageFile" accept="image/*" />
+                <div class="form-text">Supported formats: JPG, PNG, GIF (max 1MB recommended).</div>
+              </div>
+            </div>
+            <div class="mb-3 text-center">
+              <label class="form-label d-block">Preview</label>
+              <img
+                id="itemImagePreview"
+                src="assets/img/placeholder.svg"
+                alt="Item preview"
+                class="img-fluid rounded border item-image-preview"
+              />
+              <div class="d-flex justify-content-center gap-2 mt-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="resetItemImageBtn">
+                  <i class="bi bi-arrow-counterclockwise"></i>
+                  Reset Preview
+                </button>
+              </div>
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="itemStock" class="form-label">Stock Count</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="itemStock"
+                  min="0"
+                  step="1"
+                  placeholder="e.g. 25"
+                />
+                <div class="form-text">Leave blank for unlimited stock.</div>
+              </div>
+              <div class="col-md-6">
+                <label for="itemGstRate" class="form-label">GST (%)</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="itemGstRate"
+                  min="0"
+                  step="0.1"
+                  value="0"
+                  required
+                />
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="itemCategory" class="form-label">Category</label>
+              <select class="form-select" id="itemCategory" required></select>
+            </div>
+            <div class="mb-3">
+              <label for="itemDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="itemDescription" rows="2"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form class="modal-content" id="settingsForm">
+          <div class="modal-header">
+            <h5 class="modal-title">Settings</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <label for="shopNameInput" class="form-label">Shop Name</label>
+                <input type="text" class="form-control" id="shopNameInput" required />
+              </div>
+              <div class="col-12">
+                <label for="shopTaglineInput" class="form-label">Tagline / Description</label>
+                <input type="text" class="form-control" id="shopTaglineInput" />
+              </div>
+              <div class="col-12">
+                <label for="shopAddressInput" class="form-label">Address</label>
+                <textarea class="form-control" id="shopAddressInput" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label for="shopContactInput" class="form-label">Contact Details</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="shopContactInput"
+                  placeholder="Phone, email or other info"
+                />
+              </div>
+              <div class="col-md-6">
+                <label for="upiIdInput" class="form-label">UPI ID</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="upiIdInput"
+                  placeholder="example@upi"
+                  required
+                />
+                <div class="form-text">
+                  Update the account that receives QR payments.
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label for="billSeriesInput" class="form-label">Next Bill Series No.</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="billSeriesInput"
+                  min="1"
+                  step="1"
+                />
+                <div class="form-text">Auto-incremented after every bill.</div>
+              </div>
+              <div class="col-12">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="gstToggle" />
+                  <label class="form-check-label" for="gstToggle">Enable GST on Bills</label>
+                </div>
+              </div>
+            </div>
+            <div class="alert alert-info small mt-3">
+              The QR preview updates automatically. Use letters, numbers, dot, dash, or underscore before @.
+            </div>
+            <div class="text-center">
+              <img
+                id="settingsQrPreview"
+                src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=brightbreeze@upi&pn=Bill"
+                alt="QR Code Preview"
+                class="qr-preview border rounded"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Pay Now Modal -->
+    <div class="modal fade" id="payModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Scan to Pay</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <img
+              id="payQrImage"
+              src="https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=upi://pay?pa=brightbreeze@upi&pn=Bill&am=0"
+              alt="UPI QR"
+              class="img-fluid qr-large mb-3"
+            />
+            <p class="mb-0">
+              UPI ID:
+              <strong id="payModalUpi">brightbreeze@upi</strong>
+            </p>
+            <p class="small mt-2">
+              Payment link:
+              <a href="#" id="payModalLink" target="_blank" rel="noopener">upi://pay?pa=brightbreeze@upi&pn=Bill&am=0</a>
+            </p>
+            <p class="text-muted small">Once payment is received, click the button below to close this sale.</p>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <div class="text-start">
+              <div>Total</div>
+              <strong id="payModalTotal">₹0.00</strong>
+            </div>
+            <div class="d-flex gap-2">
+              <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-success" id="completeSaleBtn">Mark as Paid</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div
+      class="modal fade login-modal"
+      id="loginModal"
+      tabindex="-1"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <form class="modal-content" id="loginForm" autocomplete="off" novalidate>
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title w-100 text-center">Sign In</h5>
+          </div>
+          <div class="modal-body pt-2">
+            <p class="text-muted small text-center mb-3">
+              Use your credentials to continue. Admins can access settings and reports.
+            </p>
+            <div class="alert alert-danger d-none" id="loginErrorAlert" role="alert">
+              Invalid user ID or password. Try again.
+            </div>
+            <div class="mb-3">
+              <label for="loginUserId" class="form-label">User ID</label>
+              <input type="text" class="form-control" id="loginUserId" required autofocus />
+            </div>
+            <div class="mb-3">
+              <label for="loginPassword" class="form-label">Password</label>
+              <input type="password" class="form-control" id="loginPassword" required />
+            </div>
+          </div>
+          <div class="modal-footer border-0 flex-column gap-2">
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+            <div class="small text-muted text-center">
+              Admin: <code>admin / admin@123</code> &nbsp;|&nbsp; Sales: <code>sales / sales@123</code>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous"></script>
+    <script src="assets/js/app.js"></script>
+  </body>
+</html>
+
