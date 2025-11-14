@@ -154,6 +154,32 @@
         return false;
       }
     },
+      updateSnapshot(debounceMs = 800) {
+        if (!this.initialized) return false;
+        try {
+          if (this._snapshotTimer) {
+            clearTimeout(this._snapshotTimer);
+          }
+          this._snapshotTimer = setTimeout(async () => {
+            try {
+              const dataRef = this.db.ref(CENTRAL_ROOT + '/data');
+              const categories = JSON.parse(localStorage.getItem('bb_electrical_categories') || '[]');
+              const items = JSON.parse(localStorage.getItem('bb_electrical_items') || '[]');
+              const settings = JSON.parse(localStorage.getItem('bb_electrical_settings') || '{}');
+              const sales = JSON.parse(localStorage.getItem('bb_electrical_sales') || '[]');
+              const merged = { categories, items, settings, sales };
+              await dataRef.set(merged);
+              safeLog('Central /data snapshot updated (debounced)');
+            } catch (err) {
+              console.warn('Failed to update central snapshot', err);
+            }
+          }, debounceMs);
+          return true;
+        } catch (err) {
+          console.warn('updateSnapshot error', err);
+          return false;
+        }
+      },
   };
 
   window.CentralStore = CentralStore;

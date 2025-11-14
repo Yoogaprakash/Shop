@@ -108,6 +108,19 @@
 
   function setStoredData(key, value) {
     localStorage.setItem(key, JSON.stringify(value));
+    try {
+      if (
+        window.CENTRAL_STORE_ENABLED &&
+        window.CentralStore &&
+        window.CentralStore.initialized &&
+        typeof window.CentralStore.updateSnapshot === 'function'
+      ) {
+        // Debounced snapshot update — non-blocking
+        window.CentralStore.updateSnapshot();
+      }
+    } catch (err) {
+      console.warn('Failed to update central snapshot', err);
+    }
   }
 
   function normalizeItem(item) {
