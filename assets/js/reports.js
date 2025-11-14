@@ -34,6 +34,29 @@
     state.categories = getStoredData(STORAGE_KEYS.categories, []);
     state.items = getStoredData(STORAGE_KEYS.items, []);
 
+    // If a central store is active, listen for updates and merge them into the report view
+    if (window.CentralStore) {
+      document.addEventListener('central-data-updated', () => {
+        state.sales = getStoredData(STORAGE_KEYS.sales, []);
+        state.categories = getStoredData(STORAGE_KEYS.categories, []);
+        state.items = getStoredData(STORAGE_KEYS.items, []);
+        renderSummary();
+        renderTable();
+      });
+
+      document.addEventListener('central-sale-added', (e) => {
+        try {
+          const sale = e.detail;
+          if (sale && sale.id) {
+            state.sales.push(sale);
+            renderSummary();
+            renderTable();
+          }
+        } catch (err) {
+          console.warn('Error handling central-sale-added', err);
+        }
+      });
+    }
     populateCategoryFilter();
     renderSummary();
     renderTable();

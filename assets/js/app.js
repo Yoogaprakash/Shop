@@ -356,6 +356,18 @@
     renderCart();
     updateRoleUi();
     loginModalInstance?.hide();
+    // Robustly ensure modal and backdrop are removed (fixes cases where modal remains visible until refresh)
+    try {
+      const modalEl = document.getElementById('loginModal');
+      if (modalEl) {
+        modalEl.classList.remove('show');
+        modalEl.style.display = 'none';
+      }
+      document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+      document.body.classList.remove('modal-open');
+    } catch (err) {
+      // non-fatal
+    }
     clearLoginForm();
   }
 
@@ -533,6 +545,46 @@
   }
 
   function init() {
+    // If a central store is enabled, wait for it to sync localStorage first.
+    if (
+      window.CENTRAL_STORE_ENABLED &&
+      window.CentralStore &&
+      typeof window.CentralStore.init === 'function'
+    ) {
+      try {
+        const inited = window.CentralStore.init(window.FIREBASE_CONFIG || {});
+        if (inited && typeof window.CentralStore.fetchAndSync === 'function') {
+          // fetch central snapshot and merge into localStorage; then run app init
+          window.CentralStore.fetchAndSync().catch((err) => {
+            console.warn('Central store fetch failed, falling back to local data', err);
+            runAppInit();
+          });
+
+          const onSynced = () => {
+            runAppInit();
+            document.removeEventListener('central-data-synced', onSynced);
+          };
+          document.addEventListener('central-data-synced', onSynced);
+
+          // Fallback: if central doesn't respond within 3s, continue with local data
+          setTimeout(() => {
+            if (!runAppInit._ran) runAppInit();
+          }, 3000);
+          return;
+        }
+      } catch (err) {
+        console.warn('Central store initialization error', err);
+      }
+    }
+
+    // No central store or failed to init — run local-only init
+    runAppInit();
+  }
+
+  function runAppInit() {
+    if (runAppInit._ran) return;
+    runAppInit._ran = true;
+
     if (!productGrid) {
       return;
     }
@@ -1649,6 +1701,17 @@
     sales.push(saleRecord);
     setStoredData(STORAGE_KEYS.sales, sales);
     setStoredData(STORAGE_KEYS.items, state.items);
+
+    // If central store is enabled, attempt to push the sale to the central DB as well
+    try {
+      if (window.CENTRAL_STORE_ENABLED && window.CentralStore && typeof window.CentralStore.pushSale === 'function') {
+        window.CentralStore.pushSale(saleRecord).catch((err) => {
+          console.warn('CentralStore.pushSale failed (non-fatal)', err);
+        });
+      }
+    } catch (err) {
+      console.warn('Central store push attempt failed', err);
+    }
 
     state.settings.billSeries = billSeries + 1;
     setStoredData(STORAGE_KEYS.settings, state.settings);
