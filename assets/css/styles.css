@@ -1,47 +1,68 @@
 :root {
-  --bb-primary: #1f6feb;
-  --bb-primary-dark: #274bdb;
-  --bb-accent: #f77f00;
-  --bb-success: #2ea44f;
-  --bb-surface: rgba(255, 255, 255, 0.85);
-  --bb-card-shadow: 0 18px 40px rgba(31, 111, 235, 0.08);
-  --bb-border: rgba(31, 111, 235, 0.08);
-  --bb-text: #1f2933;
-  --bb-muted: #6b7a8f;
-  --bb-gradient-start: #eef3ff;
-  --bb-gradient-end: #fdfdff;
+  --bb-primary: #2563eb;
+  --bb-primary-dark: #1e40af;
+  --bb-accent: #f97316;
+  --bb-success: #16a34a;
+  --bb-surface: rgba(255, 255, 255, 0.9);
+  --bb-card-shadow: 0 18px 40px rgba(37, 99, 235, 0.12);
+  --bb-border: rgba(37, 99, 235, 0.1);
+  --bb-text: #1e293b;
+  --bb-muted: #64748b;
+  --bb-gradient-start: #e0e7ff;
+  --bb-gradient-end: #f0f9ff;
 }
 
 body {
   min-height: 100vh;
-  background: radial-gradient(circle at top right, var(--bb-gradient-start), #ffffff),
-    linear-gradient(135deg, rgba(31, 111, 235, 0.05), rgba(249, 250, 255, 0.8));
+  background: linear-gradient(135deg, #e0f4ff 0%, #f0f8ff 50%, #ffffff 100%);
   font-family: 'Segoe UI', 'Helvetica Neue', Tahoma, sans-serif;
   color: var(--bb-text);
 }
 
 .navbar {
-  background: linear-gradient(135deg, var(--bb-primary-dark), var(--bb-primary));
-  box-shadow: 0 12px 32px rgba(31, 78, 123, 0.2);
+  background: linear-gradient(90deg, #ffffff 0%, #f8fbff 100%);
+  box-shadow: 0 2px 12px rgba(31, 111, 235, 0.08);
+  border-bottom: 1px solid rgba(31, 111, 235, 0.1);
+  padding: 0.8rem 0;
 }
 
 .navbar-brand {
   letter-spacing: 0.5px;
   font-weight: 700;
   font-size: 1.3rem;
+  color: var(--bb-primary) !important;
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+.navbar-toggler-icon {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 .user-session-controls .btn {
-  border-radius: 999px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 1.5px solid rgba(31, 111, 235, 0.3);
 }
 
 .user-session-controls .btn-outline-light {
-  border-width: 2px;
+  color: var(--bb-primary);
+  border-color: var(--bb-primary);
+}
+
+.user-session-controls .btn-outline-light:hover {
+  background-color: var(--bb-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(31, 111, 235, 0.3);
 }
 
 .user-session-controls #activeRoleLabel {
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--bb-primary);
 }
 
 .customer-section h6 {
@@ -385,17 +406,30 @@ h4 {
   }
 }
 
+/* Pay Modal - ensure it appears above cart */
+#payModal {
+  z-index: 11100 !important;
+}
+
+#payModal .modal-backdrop {
+  z-index: 11090 !important;
+}
+
 /* Draggable Cart Styles */
 .draggable-cart {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 1000;
+  z-index: 11050;
   width: 380px;
   max-width: calc(100vw - 20px);
+  max-height: calc(100vh - 140px);
+  touch-action: none;
   transition: all 0.3s ease;
   border-radius: 12px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .minimized-cart-icon {
@@ -546,16 +580,206 @@ h4 {
 /* Mobile responsive for draggable cart */
 @media (max-width: 576px) {
   .draggable-cart {
-    width: 100%;
-    bottom: 0;
-    right: 0;
-    left: 0;
-    max-height: 70vh;
-    border-radius: 12px 12px 0 0;
+    width: calc(100vw - 20px);
+    bottom: 20px;
+    right: 10px;
+    max-height: 80vh;
+    border-radius: 12px;
   }
 
   .draggable-cart #cartContent {
-    height: 50vh !important;
+    height: 60vh !important;
+  }
+
+  .navbar {
+    padding: 0.6rem 0;
+  }
+
+  .navbar-brand {
+    font-size: 1.1rem;
+  }
+
+  .user-session-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .user-session-controls .btn {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .user-session-controls .text-lg-end {
+    font-size: 0.8rem;
+  }
+
+  main.container-fluid {
+    padding: 1rem 0.5rem;
+  }
+
+  .product-card {
+    border-radius: 8px;
+  }
+
+  .product-card img {
+    height: 120px;
+  }
+
+  .login-card {
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
+  }
+
+  .login-title {
+    font-size: 1.3rem;
+  }
+
+  .login-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .login-btn {
+    padding: 0.7rem 1rem;
+  }
+
+  .draggable-cart .table {
+    font-size: 0.7rem;
+  }
+
+  .draggable-cart .customer-section {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+
+  /* Mobile menu: make top action buttons stacked and larger touch targets */
+  .user-session-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .user-session-controls .btn {
+    width: 100%;
+    text-align: left;
+    padding: 1rem;
+    border: 2px solid var(--bb-primary);
+    background: #f8f9fa;
+    color: var(--bb-primary);
+    font-weight: 500;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .user-session-controls .btn:hover {
+    background: #e9ecef;
+    border-color: var(--bb-primary-dark);
+  }
+
+  .user-session-controls .btn:active {
+    transform: scale(0.98);
+  }
+
+  .user-session-controls .btn.btn-light {
+    border: 2px solid var(--bb-primary);
+    background: #f8f9fa;
+    color: var(--bb-primary);
+  }
+
+  .user-session-controls .btn.btn-outline-light {
+    border: 2px solid var(--bb-primary);
+    background: #f8f9fa;
+    color: var(--bb-primary);
+  }
+
+  /* Make Logout and Reports text darker/black */
+  #logoutBtn span,
+  a[href="reports.html"] span {
+    color: #000;
+  }
+
+  #logoutBtn .bi,
+  a[href="reports.html"] .bi {
+    color: #000;
+  }
+
+  /* Ensure icons and text in top menu are visible on small screens */
+  .navbar .btn .bi,
+  .user-session-controls .btn .bi {
+    color: var(--bb-primary, #1f6feb);
+    font-size: 1.1rem;
+  }
+
+  /* Cart resizer handle */
+  .cart-resizer {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 12px;
+    cursor: ns-resize;
+    background: linear-gradient(90deg, rgba(0,0,0,0.03), rgba(0,0,0,0.06));
+    z-index: 11100;
+    touch-action: none;
+  }
+
+  /* Slight visual affordance */
+  .cart-resizer::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    margin: 4px auto;
+    border-radius: 4px;
+    background: rgba(0,0,0,0.12);
+  }
+}
+
+/* When search is inline with title, make it shrink nicely */
+.flex-grow-1 .input-group {
+  min-width: 220px;
+}
+
+/* Desktop: resizer visible and positioned */
+.cart-resizer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+  cursor: ns-resize;
+  z-index: 11100;
+  touch-action: none;
+}
+
+.cart-resizer::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 4px auto;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.06);
+}
+
+/* Tablet responsive */
+@media (max-width: 768px) and (min-width: 577px) {
+  .draggable-cart {
+    width: 320px;
+    bottom: 50%;
+    transform: translateY(50%);
+  }
+
+  .draggable-cart #cartContent {
+    height: 500px !important;
+  }
+
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+
+  .user-session-controls .btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 0.9rem;
   }
 }
 
@@ -630,6 +854,238 @@ h4 {
 
 .cursor-grab:active {
   cursor: grabbing;
+}
+
+/* Global loader overlay */
+#globalLoader {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.6);
+  z-index: 2000;
+}
+
+#globalLoader.show {
+  display: flex;
+}
+
+.loader-spinner {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  border: 10px solid rgba(31,111,235,0.12);
+  border-top-color: var(--bb-primary);
+  animation: spin 1s linear infinite;
+  box-shadow: 0 8px 24px rgba(31,111,235,0.12);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* When body has .blurred, blur everything except modals (so the modal remains sharp)
+   and prevent interaction with the background while modal/login is active. */
+body.blurred > *:not(.modal) {
+  filter: blur(6px) grayscale(0.02);
+  transition: filter 0.25s ease;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Modern Login Modal Styles (matching image 1) */
+.login-modal .modal-dialog {
+  max-width: 420px;
+}
+
+.login-card {
+  border: none;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(31, 111, 235, 0.15);
+  background: linear-gradient(135deg, #ffffff 0%, #f9fbff 100%);
+  padding: 2.5rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(31, 111, 235, 0.05), transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.login-icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-icon {
+  font-size: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, rgba(31, 111, 235, 0.1), rgba(31, 111, 235, 0.05));
+  border-radius: 20px;
+  border: 2px solid rgba(31, 111, 235, 0.15);
+}
+
+.login-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1f2933;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.login-subtitle {
+  font-size: 0.95rem;
+  color: #6b7a8f;
+  margin: 0.5rem 0 0;
+  line-height: 1.4;
+}
+
+.login-input {
+  border: 2px solid rgba(31, 111, 235, 0.12);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.login-input::placeholder {
+  color: #9ca3af;
+}
+
+.login-input:focus {
+  border-color: #1f6feb;
+  background-color: white;
+  box-shadow: 0 0 0 4px rgba(31, 111, 235, 0.1);
+}
+
+.login-forgot-link {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.8rem;
+  color: #1f6feb;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.login-forgot-link:hover {
+  color: #274bdb;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #1f6feb, #274bdb);
+  border: none;
+  border-radius: 10px;
+  padding: 0.8rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(31, 111, 235, 0.3);
+}
+
+.login-btn:hover {
+  background: linear-gradient(135deg, #274bdb, #1f6feb);
+  box-shadow: 0 6px 20px rgba(31, 111, 235, 0.4);
+  transform: translateY(-2px);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+.login-divider {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #9ca3af;
+  margin: 1.5rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: calc((100% - 120px) / 2);
+  height: 1px;
+  background: rgba(31, 111, 235, 0.15);
+}
+
+.login-divider::before {
+  left: 0;
+}
+
+.login-divider::after {
+  right: 0;
+}
+
+.login-social-btns {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.login-social-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(31, 111, 235, 0.15);
+  background: rgba(255, 255, 255, 0.7);
+  color: #1f6feb;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.login-social-btn:hover {
+  border-color: #1f6feb;
+  background: #f0f7ff;
+  box-shadow: 0 4px 12px rgba(31, 111, 235, 0.2);
+  transform: translateY(-2px);
+}
+
+.login-social-btn i {
+  display: flex;
+  align-items: center;
+}
+
+/* Modal backdrop blur adjustment */
+.login-modal .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(4px);
+}
+
+/* Also dim the backdrop behind the modal when blurred */
+body.blurred::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.12);
+  z-index: 1040; /* below modal (bootstrap backdrop ~1040-1050) */
 }
 
 

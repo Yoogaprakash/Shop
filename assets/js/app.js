@@ -115,6 +115,28 @@
         window.CentralStore.initialized &&
         typeof window.CentralStore.updateSnapshot === 'function'
       ) {
+        // Show loader and schedule it to hide after timeout
+        const loader = document.getElementById('globalLoader');
+        if (loader) {
+          loader.classList.add('show');
+        }
+        
+        // Set a timeout to hide loader if central update doesn't complete
+        let timeoutId = setTimeout(() => {
+          if (loader) loader.classList.remove('show');
+        }, 3000);
+        
+        // Listen for snapshot update completion and hide loader
+        const onUpdateDone = () => {
+          clearTimeout(timeoutId);
+          if (loader) loader.classList.remove('show');
+          document.removeEventListener('central-snapshot-updated', onUpdateDone);
+          document.removeEventListener('central-snapshot-update-failed', onUpdateDone);
+        };
+        
+        document.addEventListener('central-snapshot-updated', onUpdateDone, { once: true });
+        document.addEventListener('central-snapshot-update-failed', onUpdateDone, { once: true });
+        
         // Debounced snapshot update — non-blocking
         window.CentralStore.updateSnapshot();
       }
@@ -327,6 +349,10 @@
       return;
     }
     clearLoginForm();
+    // Blur background except modal area
+    try {
+      document.body.classList.add('blurred');
+    } catch (err) {}
     loginModalInstance.show();
   }
 
@@ -341,6 +367,10 @@
     if (!loginUserIdInput || !loginPasswordInput) {
       return;
     }
+    // show global loader while login is being processed
+    try {
+      document.getElementById('globalLoader')?.classList.add('show');
+    } catch (err) {}
     const userId = loginUserIdInput.value.trim().toLowerCase();
     const password = loginPasswordInput.value;
     const credentialEntry = Object.entries(ROLE_CREDENTIALS).find(
@@ -356,6 +386,10 @@
       if (loginErrorAlert) {
         loginErrorAlert.classList.remove('d-none');
       }
+      try {
+        document.getElementById('globalLoader')?.classList.remove('show');
+      } catch (err) {}
+      // keep blur while showing the error so user clearly sees the modal; remove only if they navigate away
       return;
     }
 
@@ -368,7 +402,60 @@
     renderProducts();
     renderCart();
     updateRoleUi();
-    loginModalInstance?.hide();
+    // Strongly ensure modal/backdrop/blur are removed to avoid stuck UI.
+    (function clearModalImmediatelyAndRetry() {
+      try {
+        const modalEl = document.getElementById('loginModal');
+        // Use Bootstrap API if available
+        try {
+          loginModalInstance?.hide();
+        } catch (err) {
+          console.warn('loginModalInstance.hide() error', err);
+        }
+
+        // Dispose Bootstrap instance to remove internal state
+        try {
+          const inst = bootstrap?.Modal?.getInstance(modalEl) || bootstrap?.Modal?.getOrCreateInstance(modalEl);
+          inst?.dispose?.();
+        } catch (err) {
+          // ignore
+        }
+
+        if (modalEl) {
+          modalEl.classList.remove('show');
+          modalEl.style.display = 'none';
+          modalEl.removeAttribute('aria-modal');
+          modalEl.removeAttribute('role');
+        }
+
+        // remove bootstrap backdrops and modal-open body class
+        document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+        document.body.classList.remove('modal-open');
+
+        // remove our blur and loader
+        document.body.classList.remove('blurred');
+        document.getElementById('globalLoader')?.classList.remove('show');
+      } catch (err) {
+        console.warn('clearModalImmediately error', err);
+      }
+
+      // Retry after short delay in case something reinserts backdrop/modal
+      setTimeout(() => {
+        try {
+          document.querySelectorAll('.modal-backdrop').forEach((el) => el.remove());
+          const modalEl2 = document.getElementById('loginModal');
+          if (modalEl2) {
+            modalEl2.classList.remove('show');
+            modalEl2.style.display = 'none';
+          }
+          document.body.classList.remove('modal-open');
+          document.body.classList.remove('blurred');
+          document.getElementById('globalLoader')?.classList.remove('show');
+        } catch (err) {
+          console.warn('clearModal retry error', err);
+        }
+      }, 300);
+    })();
     // Robustly ensure modal and backdrop are removed (fixes cases where modal remains visible until refresh)
     try {
       const modalEl = document.getElementById('loginModal');
@@ -382,6 +469,15 @@
       // non-fatal
     }
     clearLoginForm();
+    // hide loader and remove blur after UI has updated
+    setTimeout(() => {
+      try {
+        document.getElementById('globalLoader')?.classList.remove('show');
+      } catch (err) {}
+      try {
+        document.body.classList.remove('blurred');
+      } catch (err) {}
+    }, 250);
   }
 
   function handleLogout() {
@@ -558,6 +654,12 @@
   }
 
   function init() {
+    // Show loading spinner while data loads
+    const loader = document.getElementById('globalLoader');
+    if (loader) {
+      loader.classList.add('show');
+    }
+
     // If a central store is enabled, wait for it to sync localStorage first.
     if (
       window.CENTRAL_STORE_ENABLED &&
@@ -659,12 +761,55 @@
     updateSessionUi();
     ensureAuthenticated();
 
+    // Hide loader once all data and UI is rendered
+    const loader = document.getElementById('globalLoader');
+    if (loader) {
+      loader.classList.remove('show');
+    }
+
     // Render settings tabs when modal is shown
     if (settingsModalElement) {
       settingsModalElement.addEventListener('shown.bs.modal', () => {
         renderCategoriesInSettings();
         renderProductsInSettings();
       });
+    }
+
+    // Add cleanup handlers for category and item modals to restore page interaction
+    if (categoryModal) {
+      categoryModal.addEventListener('hidden.bs.modal', () => {
+        // Re-enable page scrolling and interaction
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        // Remove any lingering backdrops
+        setTimeout(() => {
+          document.querySelectorAll('.modal-backdrop').forEach((bd) => bd.remove());
+        }, 50);
+      });
+    }
+
+    if (itemModal) {
+      itemModal.addEventListener('hidden.bs.modal', () => {
+        // Re-enable page scrolling and interaction
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+        // Remove any lingering backdrops
+        setTimeout(() => {
+          document.querySelectorAll('.modal-backdrop').forEach((bd) => bd.remove());
+        }, 50);
+      });
+    }
+
+    // Ensure cart is hidden by default on page load
+    try {
+      const cart = document.getElementById('draggableCart');
+      if (cart) {
+        cart.style.display = 'none';
+      }
+    } catch (err) {
+      console.warn('Failed to apply initial cart state', err);
     }
   }
 
@@ -695,8 +840,33 @@
 
     // Draggable cart functionality
     setupDraggableCart();
-    setupMinimizedCartClick();
-    document.getElementById('minimizeCartBtn')?.addEventListener('click', toggleMinimizeCart);
+    // Modal stacking helper for nested modals
+    setupModalStacking();
+    // Cart resize support
+    setupCartResizer();
+    
+    // Top nav cart button: expand/collapse cart panel
+    document.getElementById('topNavCartIcon')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      const cart = document.getElementById('draggableCart');
+      if (cart) {
+        if (cart.style.display === 'none') {
+          // Expand: show full cart panel
+          cart.style.display = 'block';
+        } else {
+          // Collapse: hide full cart panel, show menu button
+          cart.style.display = 'none';
+        }
+      }
+    });
+
+    document.getElementById('minimizeCartBtn')?.addEventListener('click', () => {
+      // Minimize button on cart header: collapse to menu
+      const cart = document.getElementById('draggableCart');
+      if (cart) {
+        cart.style.display = 'none';
+      }
+    });
 
     categoryForm?.addEventListener('submit', handleCategorySubmit);
     itemForm?.addEventListener('submit', handleItemSubmit);
@@ -715,11 +885,24 @@
     exportItemsBtn?.addEventListener('click', exportItemsWorkbook);
     importItemsBtn?.addEventListener('click', handleImportItemsClick);
     itemImportInput?.addEventListener('change', handleItemImportInput);
+    // Also bind the duplicate buttons in settings modal
+    document.getElementById('downloadTemplateBtn2')?.addEventListener('click', downloadItemTemplate);
+    document.getElementById('exportItemsBtn2')?.addEventListener('click', exportItemsWorkbook);
+    document.getElementById('importItemsBtn2')?.addEventListener('click', handleImportItemsClick);
     openLoginModalBtn?.addEventListener('click', showLoginModal);
     logoutBtn?.addEventListener('click', handleLogout);
     loginForm?.addEventListener('submit', handleLoginSubmit);
     loginModalElement?.addEventListener('shown.bs.modal', () => {
       loginUserIdInput?.focus();
+    });
+    // When login modal is hidden, remove any blur and loader left behind
+    loginModalElement?.addEventListener('hidden.bs.modal', () => {
+      try {
+        document.body.classList.remove('blurred');
+      } catch (err) {}
+      try {
+        document.getElementById('globalLoader')?.classList.remove('show');
+      } catch (err) {}
     });
 
     completeSaleBtn?.addEventListener('click', () => {
@@ -744,11 +927,15 @@
   }
 
   function renderCategories() {
+    if (!categoryList) {
+      // categoryList element not present on this page/view, skip rendering
+      return;
+    }
     categoryList.innerHTML = '';
     if (!state.categories.length) {
       categoryList.innerHTML =
         '<div class="list-group-item text-muted">No categories yet</div>';
-      categoryTitle.textContent = 'Products';
+      if (categoryTitle) categoryTitle.textContent = 'Products';
       return;
     }
 
@@ -812,6 +999,10 @@
   }
 
   function renderProducts(searchQuery = '') {
+    if (!productGrid) {
+      // productGrid element not present, skip rendering
+      return;
+    }
     productGrid.innerHTML = '';
 
     // Show all products, optionally filtered by search query
@@ -896,11 +1087,15 @@
   }
 
   function renderCart() {
+    if (!cartTableBody) {
+      // cartTableBody element not present, skip rendering
+      return;
+    }
     cartTableBody.innerHTML = '';
     if (!state.cart.length) {
       cartTableBody.innerHTML =
         '<tr><td colspan="5" class="text-center text-muted">Cart is empty</td></tr>';
-      cartCount.textContent = '0 items';
+      if (cartCount) cartCount.textContent = '0 items';
       updateTotals();
       return;
     }
@@ -2509,80 +2704,176 @@
     const header = document.getElementById('cartHeader');
     if (!cart || !header) return;
 
+    // Ensure cart uses fixed positioning and doesn't use transforms that break calculations
+    cart.style.position = 'fixed';
+    cart.style.touchAction = 'none';
+
     let isDown = false;
     let offset = { x: 0, y: 0 };
 
-    header.addEventListener('mousedown', (e) => {
-      if (e.target.closest('button')) return; // Don't drag when clicking buttons
+    function getClient(e) {
+      if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      return { x: e.clientX, y: e.clientY };
+    }
+
+    function startDrag(e) {
+      const target = e.target || e.srcElement;
+      if (target && target.closest && target.closest('button')) return; // don't drag when clicking buttons
+      e.preventDefault();
       isDown = true;
       const rect = cart.getBoundingClientRect();
-      offset.x = e.clientX - rect.left;
-      offset.y = e.clientY - rect.top;
+      const point = getClient(e);
+      offset.x = point.x - rect.left;
+      offset.y = point.y - rect.top;
       cart.style.cursor = 'grabbing';
-    });
+    }
 
-    document.addEventListener('mousemove', (e) => {
+    function onMove(e) {
       if (!isDown) return;
-      const cart = document.getElementById('draggableCart');
-      if (!cart) return;
+      const point = getClient(e);
+      let x = point.x - offset.x;
+      let y = point.y - offset.y;
 
-      const x = e.clientX - offset.x;
-      const y = e.clientY - offset.y;
+      // Clamp to viewport with small margin
+      const margin = 8;
+      const maxX = Math.max(margin, window.innerWidth - cart.offsetWidth - margin);
+      const maxY = Math.max(margin, window.innerHeight - cart.offsetHeight - margin);
+      x = Math.max(margin, Math.min(x, maxX));
+      y = Math.max(margin, Math.min(y, maxY));
 
       cart.style.left = x + 'px';
+      cart.style.top = y + 'px';
       cart.style.right = 'auto';
       cart.style.bottom = 'auto';
-      cart.style.top = y + 'px';
-    });
+    }
 
-    document.addEventListener('mouseup', () => {
+    function endDrag() {
       isDown = false;
       cart.style.cursor = 'grab';
+    }
+
+    header.addEventListener('mousedown', startDrag);
+    header.addEventListener('touchstart', startDrag, { passive: false });
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchend', endDrag);
+
+    // Keep cart within viewport on resize
+    window.addEventListener('resize', () => {
+      const rect = cart.getBoundingClientRect();
+      const margin = 8;
+      const maxX = Math.max(margin, window.innerWidth - cart.offsetWidth - margin);
+      const maxY = Math.max(margin, window.innerHeight - cart.offsetHeight - margin);
+      let left = parseFloat(cart.style.left) || rect.left;
+      let top = parseFloat(cart.style.top) || rect.top;
+      left = Math.max(margin, Math.min(left, maxX));
+      top = Math.max(margin, Math.min(top, maxY));
+      cart.style.left = left + 'px';
+      cart.style.top = top + 'px';
     });
   }
 
-  function toggleMinimizeCart() {
-    const cart = document.getElementById('draggableCart');
-    const topNavIcon = document.getElementById('topNavCartIcon');
-    const isMinimized = cart?.classList.toggle('minimized');
-    
-    // Show/hide cart based on minimize state
-    if (cart) {
-      if (isMinimized) {
-        cart.style.display = 'none';
-        if (topNavIcon) topNavIcon.classList.remove('d-none');
-      } else {
-        cart.style.display = 'block';
-        if (topNavIcon) topNavIcon.classList.add('d-none');
+  // Ensure proper stacking when multiple Bootstrap modals are opened
+  function setupModalStacking() {
+    document.addEventListener('show.bs.modal', (e) => {
+      // number of currently visible modals
+      const openCount = document.querySelectorAll('.modal.show').length;
+      const baseZ = 1050;
+      const modal = e.target;
+      const z = baseZ + (openCount * 20);
+      modal.style.zIndex = z;
+    });
+
+    document.addEventListener('shown.bs.modal', (e) => {
+      const modal = e.target;
+      const backdrops = document.querySelectorAll('.modal-backdrop');
+      const lastBackdrop = backdrops[backdrops.length - 1];
+      if (lastBackdrop) {
+        const modalZ = parseInt(modal.style.zIndex, 10) || 1050;
+        lastBackdrop.style.zIndex = (modalZ - 10).toString();
       }
-    }
-    
-    // Update cart count badge
-    const cartCount = document.getElementById('cartCount');
-    const topNavBadge = document.getElementById('topNavCartBadge');
-    if (topNavBadge) {
-      topNavBadge.textContent = cartCount?.textContent || '0';
-    }
+    });
+
+    document.addEventListener('hidden.bs.modal', (e) => {
+      // cleanup inline styles so future modals use defaults
+      const modal = e.target;
+      if (modal && modal.style) modal.style.zIndex = '';
+      
+      // cleanup any backdrops
+      document.querySelectorAll('.modal-backdrop').forEach((b) => (b.style.zIndex = ''));
+      
+      // Force cleanup of modal-open class and scroll state
+      setTimeout(() => {
+        const visibleModals = document.querySelectorAll('.modal.show');
+        if (visibleModals.length === 0) {
+          document.body.classList.remove('modal-open');
+          document.body.style.overflow = '';
+          document.body.style.paddingRight = '';
+        }
+        
+        // Remove any lingering backdrops
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length > 0 && visibleModals.length === 0) {
+          backdrops.forEach((bd) => bd.remove());
+        }
+      }, 0);
+    });
   }
 
-  function setupMinimizedCartClick() {
-    // Top nav cart icon click handler
-    document.getElementById('topNavCartIcon')?.addEventListener('click', (e) => {
+  // Cart resize support (vertical resize)
+  function setupCartResizer() {
+    const cart = document.getElementById('draggableCart');
+    const resizer = document.getElementById('cartResizer');
+    const content = document.getElementById('cartContent');
+    if (!cart || !resizer || !content) return;
+
+    let isResizing = false;
+    let startY = 0;
+    let startHeight = 0;
+
+    function clampHeight(h) {
+      const minH = 180; // minimal visible cart
+      const maxH = Math.max(200, window.innerHeight - 120);
+      return Math.max(minH, Math.min(h, maxH));
+    }
+
+    function onStart(e) {
       e.preventDefault();
-      const cart = document.getElementById('draggableCart');
-      if (cart) {
-        cart.classList.remove('minimized');
-        cart.style.display = 'block';
-        document.getElementById('topNavCartIcon').classList.add('d-none');
-      }
-    });
-  }
-
-  function toggleCloseCart() {
-    const cart = document.getElementById('draggableCart');
-    if (cart) {
-      cart.style.display = cart.style.display === 'none' ? 'block' : 'none';
+      isResizing = true;
+      startY = e.touches ? e.touches[0].clientY : e.clientY;
+      startHeight = content.getBoundingClientRect().height;
+      document.body.style.userSelect = 'none';
     }
+
+    function onMove(e) {
+      if (!isResizing) return;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const dy = startY - clientY; // dragging up increases height
+      const newH = clampHeight(startHeight + dy);
+      content.style.maxHeight = newH + 'px';
+      // persist
+      try { localStorage.setItem('bb_cart_height', newH); } catch (err) {}
+    }
+
+    function onEnd() {
+      if (!isResizing) return;
+      isResizing = false;
+      document.body.style.userSelect = '';
+    }
+
+    resizer.addEventListener('mousedown', onStart);
+    resizer.addEventListener('touchstart', onStart, { passive: false });
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchend', onEnd);
+
+    // Restore stored height if any
+    try {
+      const stored = parseInt(localStorage.getItem('bb_cart_height'), 10);
+      if (stored && !isNaN(stored)) content.style.maxHeight = clampHeight(stored) + 'px';
+    } catch (err) {}
   }
 
   function renderCategoriesInSettings() {

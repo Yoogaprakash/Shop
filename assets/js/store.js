@@ -170,8 +170,12 @@
               const merged = { categories, items, settings, sales };
               await dataRef.set(merged);
               safeLog('Central /data snapshot updated (debounced)');
+              // Emit event when snapshot update completes
+              window.dispatchEvent(new Event('central-snapshot-updated'));
             } catch (err) {
               console.warn('Failed to update central snapshot', err);
+              // Emit failure event so loader can be cleared
+              window.dispatchEvent(new Event('central-snapshot-update-failed'));
             }
           }, debounceMs);
           return true;

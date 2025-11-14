@@ -36,11 +36,11 @@
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
           <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 user-session-controls">
-            <div class="text-lg-end text-white-50 small lh-sm" id="userInfoWrapper">
+            <div class="text-lg-end text-white-50 small lh-sm d-none d-lg-block" id="userInfoWrapper">
               <div id="sessionStatusLabel">Logged in as</div>
               <div class="fw-semibold text-white" id="activeRoleLabel">Guest</div>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-column flex-lg-row gap-2 w-100 w-lg-auto">
               <button
                 class="btn btn-outline-light d-flex align-items-center gap-2"
                 type="button"
@@ -50,7 +50,7 @@
                 <span>Login</span>
               </button>
               <button
-                class="btn btn-outline-light d-flex align-items-center gap-2 d-none"
+                class="btn btn-light d-flex align-items-center gap-2 d-none"
                 type="button"
                 id="logoutBtn"
               >
@@ -58,17 +58,18 @@
                 <span>Logout</span>
               </button>
             </div>
-            <a class="btn btn-outline-light d-flex align-items-center gap-2 admin-only" href="reports.html">
+            <a class="btn btn-light d-flex align-items-center gap-2 admin-only" href="reports.html">
               <i class="bi bi-graph-up"></i>
-              <span class="d-lg-inline d-none">Reports</span>
+              <span class="d-inline">Reports</span>
             </a>
             <button
-              class="btn btn-outline-light d-flex align-items-center gap-2 position-relative d-none"
+              class="btn btn-light d-flex align-items-center gap-2 position-relative"
               type="button"
               id="topNavCartIcon"
               title="Shopping Cart"
             >
               <i class="bi bi-cart fs-5"></i>
+              <span class="d-inline">Cart</span>
               <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="topNavCartBadge">0</span>
             </button>
             <button
@@ -78,7 +79,7 @@
               id="openSettingsBtn"
             >
               <i class="bi bi-gear"></i>
-              <span class="d-lg-inline d-none">Settings</span>
+              <span class="d-inline">Settings</span>
             </button>
           </div>
         </div>
@@ -89,41 +90,41 @@
       <div class="row g-3">
         <!-- Main Content: Products -->
         <section class="col-12">
-          <div class="mb-3">
-            <div class="input-group">
-              <span class="input-group-text"><i class="bi bi-search"></i></span>
-              <input type="text" class="form-control" id="productSearchInput" placeholder="Search products by name, brand, or category..." />
-            </div>
-          </div>
           <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
             <h4 class="mb-0" id="categoryTitle">All Products</h4>
+            <div class="flex-grow-1 mx-2">
+              <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control" id="productSearchInput" placeholder="Search products by name, brand, or category..." />
+              </div>
+            </div>
             <div class="d-flex flex-wrap gap-2 admin-only">
-              <button class="btn btn-outline-secondary" id="downloadTemplateBtn" type="button">
+              <button class="btn btn-outline-secondary d-none" id="downloadTemplateBtn" type="button">
                 <i class="bi bi-file-earmark-arrow-down"></i>
                 <span class="d-none d-lg-inline">Template</span>
               </button>
-              <button class="btn btn-outline-primary" id="exportItemsBtn" type="button">
+              <button class="btn btn-outline-primary d-none" id="exportItemsBtn" type="button">
                 <i class="bi bi-file-earmark-spreadsheet"></i>
                 <span class="d-none d-lg-inline">Export</span>
               </button>
-              <button class="btn btn-outline-success" id="importItemsBtn" type="button">
+              <button class="btn btn-outline-success d-none" id="importItemsBtn" type="button">
                 <i class="bi bi-upload"></i>
                 <span class="d-none d-lg-inline">Import</span>
               </button>
-              <button class="btn btn-success" id="addItemBtn" title="Add Item" type="button">
+              <button class="btn btn-success d-none" id="addItemBtn" title="Add Item" type="button">
                 <i class="bi bi-box-seam"></i>
                 <span class="d-none d-lg-inline">Add Item</span>
               </button>
             </div>
           </div>
           <input type="file" id="itemImportInput" accept=".xlsx,.xls" class="d-none" />
-          <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3" id="productGrid"></div>
+          <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-2" id="productGrid"></div>
         </section>
       </div>
     </main>
 
     <!-- Draggable Cart -->
-    <div id="draggableCart" class="draggable-cart card shadow-lg minimized">
+    <div id="draggableCart" class="draggable-cart card shadow-lg" style="display: none;">
       <div id="cartHeader" class="card-header d-flex justify-content-between align-items-center cursor-grab">
         <div class="d-flex align-items-center gap-2">
           <i class="bi bi-grip-vertical"></i>
@@ -140,7 +141,7 @@
         <i class="bi bi-cart"></i>
         <span class="badge bg-secondary" id="minimizedCartCount">0</span>
       </div>
-      <div id="cartContent" class="card-body d-flex flex-column" style="height: 600px; overflow-y: auto;">
+      <div id="cartContent" class="card-body d-flex flex-column" style="max-height: calc(100vh - 200px); overflow-y: auto;">
         <div class="cart-items flex-grow-1">
           <div class="table-responsive">
             <table class="table table-sm align-middle">
@@ -196,11 +197,11 @@
               <i class="bi bi-qr-code-scan"></i>
               <span>Pay Now</span>
             </button>
-            <button class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center gap-2" id="printBillBtn">
+            <button class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center gap-2 d-none" id="printBillBtn">
               <i class="bi bi-printer"></i>
               <span>Print Bill</span>
             </button>
-            <button class="btn btn-outline-info btn-sm d-flex align-items-center justify-content-center gap-2" id="testBillBtn" title="Add sample items">
+            <button class="btn btn-outline-info btn-sm d-flex align-items-center justify-content-center gap-2 d-none" id="testBillBtn" title="Add sample items">
               <i class="bi bi-file-text"></i>
               <span>Test</span>
             </button>
@@ -211,6 +212,8 @@
           </div>
         </div>
       </div>
+      <!-- Resizer handle: drag to resize cart -->
+      <div id="cartResizer" class="cart-resizer" title="Drag to resize"></div>
     </div>
 
     <!-- Category Modal -->
@@ -463,15 +466,15 @@
                     <i class="bi bi-upload"></i>
                     Import Data from JSON
                   </button>
-                  <button type="button" class="btn btn-outline-secondary" id="downloadTemplateBtn" title="Download import template">
+                  <button type="button" class="btn btn-outline-secondary" id="downloadTemplateBtn2" title="Download import template">
                     <i class="bi bi-file-earmark-arrow-down"></i>
                     Download Template
                   </button>
-                  <button type="button" class="btn btn-outline-primary" id="exportItemsBtn" title="Export items as spreadsheet">
+                  <button type="button" class="btn btn-outline-primary" id="exportItemsBtn2" title="Export items as spreadsheet">
                     <i class="bi bi-file-earmark-spreadsheet"></i>
                     Export Items (XLSX)
                   </button>
-                  <button type="button" class="btn btn-outline-success" id="importItemsBtn" title="Import items from spreadsheet">
+                  <button type="button" class="btn btn-outline-success" id="importItemsBtn2" title="Import items from spreadsheet">
                     <i class="bi bi-upload"></i>
                     Import Items (XLSX)
                   </button>
@@ -528,7 +531,7 @@
       </div>
     </div>
 
-    <!-- Login Modal -->
+    <!-- Login Modal (Modern Design) -->
     <div
       class="modal fade login-modal"
       id="loginModal"
@@ -538,31 +541,35 @@
       data-bs-keyboard="false"
     >
       <div class="modal-dialog modal-dialog-centered">
-        <form class="modal-content" id="loginForm" autocomplete="off" novalidate>
-          <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title w-100 text-center">Sign In</h5>
+        <form class="modal-content login-card" id="loginForm" autocomplete="off" novalidate>
+          <div class="login-icon-wrapper">
+            <div class="login-icon">🔐</div>
           </div>
-          <div class="modal-body pt-2">
-            <p class="text-muted small text-center mb-3">
-              Use your credentials to continue. Admins can access settings and reports.
-            </p>
-            <div class="alert alert-danger d-none" id="loginErrorAlert" role="alert">
-              Invalid user ID or password. Try again.
-            </div>
-            <div class="mb-3">
-              <label for="loginUserId" class="form-label">User ID</label>
-              <input type="text" class="form-control" id="loginUserId" required autofocus />
-            </div>
-            <div class="mb-3">
-              <label for="loginPassword" class="form-label">Password</label>
-              <input type="password" class="form-control" id="loginPassword" required />
+          <div class="text-center mb-4">
+            <h4 class="login-title">Sign in with credentials</h4>
+            <p class="login-subtitle">Access your account to manage inventory and view reports</p>
+          </div>
+          <div class="alert alert-danger d-none" id="loginErrorAlert" role="alert" style="margin-bottom: 1.5rem;">
+            Invalid credentials. Try again.
+          </div>
+          <div class="mb-3">
+            <input type="text" class="form-control login-input" id="loginUserId" placeholder="User ID" required autofocus />
+          </div>
+          <div class="mb-4">
+            <div class="position-relative">
+              <input type="password" class="form-control login-input" id="loginPassword" placeholder="Password" required />
+              <a href="#" class="login-forgot-link">Forgot password?</a>
             </div>
           </div>
-          <div class="modal-footer border-0 flex-column gap-2">
-            <button type="submit" class="btn btn-primary w-100">Login</button>
-            <div class="small text-muted text-center">
-              Admin: <code>admin / admin@123</code> &nbsp;|&nbsp; Sales: <code>sales / sales@123</code>
-            </div>
+          <button type="submit" class="btn login-btn w-100 mb-3">Get Started</button>
+          <div class="login-divider">Or sign in with</div>
+          <div class="login-social-btns">
+            <button type="button" class="login-social-btn" title="Sign in with Google"><i class="bi bi-google"></i></button>
+            <button type="button" class="login-social-btn" title="Sign in with Facebook"><i class="bi bi-facebook"></i></button>
+            <button type="button" class="login-social-btn" title="Sign in with Apple"><i class="bi bi-apple"></i></button>
+          </div>
+          <div class="small text-muted text-center mt-3">
+            Admin: <strong>admin / admin@123</strong> &nbsp;•&nbsp; Sales: <strong>sales / sales@123</strong>
           </div>
         </form>
       </div>
@@ -594,6 +601,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     <script src="assets/js/store.js"></script>
     <script src="assets/js/app.js"></script>
+    <!-- Global loader shown during login/critical operations -->
+    <div id="globalLoader" aria-hidden="true">
+      <div class="loader-spinner" role="status" aria-label="Loading"></div>
+    </div>
   </body>
 </html>
 
